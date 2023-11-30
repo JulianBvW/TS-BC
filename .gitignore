@@ -1,9 +1,10 @@
 dataset/data/*
 example_images/*
 openai_vpt/*
-weights/mineclip/*
-weights/vpt/*
-weights/ts_bc/*
+weights/mineclip/*.pth
+weights/vpt/*.model
+weights/vpt/*.weights
+weights/ts_bc/*.npy
 
 *.mp4
 
