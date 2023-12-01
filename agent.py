@@ -6,7 +6,6 @@ import numpy as np
 from tqdm import tqdm
 from minerl.herobraine.env_specs.human_survival_specs import HumanSurvival
 
-from util import to_minerl_action
 from EpisodeActions import EpisodeActions
 from LatentSpaceMineCLIP import SLIDING_WINDOW_SIZE
 from LatentSpaceVPT import LatentSpaceVPT, load_vpt, AGENT_RESOLUTION, CONTEXT
@@ -38,13 +37,8 @@ episode_actions.load()
 latent_space_vpt = LatentSpaceVPT()
 latent_space_vpt.load()
 
-def search(frame):
-    global model_state, log, frame_counter
-
-    frame = cv2.resize(frame, AGENT_RESOLUTION)
-    frame = torch.tensor(frame).unsqueeze(0).unsqueeze(0).to('cuda')  # Add 2 extra dimensions for vpt
-    (latent, _), model_state = vpt_model.net({'img': frame}, model_state, context=CONTEXT)
-    del(frame)
+def search(latent):
+    global log, frame_counter
 
     nearest_idx = latent_space_vpt.get_nearest(latent[0][0])
     nearest_idx = nearest_idx.to('cpu').item()
@@ -60,7 +54,7 @@ def search(frame):
 
     return nearest_idx
 
-def get_action(frame, frame_counter):
+def get_action(latent, frame_counter):
     global nearest_idx, follow_frame, log
 
     if frame_counter < 40:  # Warmup phase ; Turn around
@@ -70,16 +64,14 @@ def get_action(frame, frame_counter):
 
     follow_frame += 1
     if frame_counter == 40 or frame_counter % 60 == 0:  # Redo the search every N frames
-        nearest_idx = search(frame)
+        nearest_idx = search(latent)
         follow_frame = 0
 
-    action = episode_actions.actions[nearest_idx + follow_frame]
+    action, is_null_action = episode_actions.actions[nearest_idx + follow_frame]
     if action is None:
         log.append(f'[Frame {frame_counter} ({frame_counter // 20 // 60}:{(frame_counter // 20) % 60})] End of episode')
-        nearest_idx = search(frame)
+        nearest_idx = search(latent)
         return env.action_space.noop()
-
-    action, _ = to_minerl_action(action)  # TODO directly at training
 
     return action
 
@@ -91,7 +83,14 @@ obs = env.reset()
 
 with torch.no_grad():
     for _ in tqdm(range(MAX_FRAMES)):
-        action = get_action(obs['pov'], frame_counter)
+
+        frame = obs['pov']
+        frame = cv2.resize(frame, AGENT_RESOLUTION)
+        frame = torch.tensor(frame).unsqueeze(0).unsqueeze(0).to('cuda')  # Add 2 extra dimensions for vpt
+        (latent, _), model_state = vpt_model.net({'img': frame}, model_state, context=CONTEXT)
+        del(frame)
+
+        action = get_action(latent, frame_counter)
 
         obs, reward, done, _ = env.step(action)  # obs['pov'].shape == (360, 640, 3)
 
