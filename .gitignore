@@ -6,6 +6,10 @@ weights/vpt/*.model
 weights/vpt/*.weights
 weights/ts_bc/*.npy
 
+*.tar.gz
+
+# TODO delete?
+agent_log.txt
 *.mp4
 
 # Created by https://www.toptal.com/developers/gitignore/api/python,windows
