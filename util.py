@@ -86,7 +86,7 @@ def to_minerl_action(json_action):
     # Mouse movement
     dx = cap(json_action['mouse']['dx'] * CAMERA_SCALER)
     dy = cap(json_action['mouse']['dy'] * CAMERA_SCALER)
-    action['camera'] = [dx, dy]
+    action['camera'] = [dy, dx]
     if dx != 0 or dy != 0:
         is_null_action = False
 
