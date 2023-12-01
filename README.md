@@ -1,11 +1,11 @@
 # TS-BC
 
-Targeted Search-Based Behavioral-Cloning for learning to play Minecraft.
+**Targeted Search-Based Behavioral-Cloning** for learning to play Minecraft.
 
-Search-Based Behavioral-Cloning searches the latent space of a neural model (here VPT) for similar situations in the dataset.
+**Search-Based Behavioral-Cloning **(S-BC) searches the latent space of a neural model (here VPT) for similar situations in the dataset.
 After finding a suitable starting point it copies the actions that were done in the demonstrator dataset.
 
-Targeted S-BC takes a text goal and searches the dataset for similar outcomes in another model (here MineCLIP).
+**Targeted S-BC** (TS-BC) takes a text goal and searches the dataset for similar outcomes in another model (here MineCLIP).
 The search results from both models are then filtered to get trajectories where the current agent situation can lead to the goal.
 The actions from those trajectories are then copied.
 
