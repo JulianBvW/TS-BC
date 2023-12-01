@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 
+from util import to_minerl_action
 from LatentSpaceMineCLIP import SLIDING_WINDOW_SIZE
 
 class EpisodeActions:
@@ -30,7 +31,7 @@ class EpisodeActions:
 
         for ts in range(SLIDING_WINDOW_SIZE-1, len(actions)):  # Start at Frame 15 because of MineCLIP needing 16-frame batches
             action = actions[ts]
-            self.actions.append(action)
+            self.actions.append(to_minerl_action(action))
             self.frame_counter += 1
         
         self.actions.append(None)  # Append Null Action for last frame
