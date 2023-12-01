@@ -1,6 +1,6 @@
 dataset/data/*
 example_images/*
-openai_vpt/*
+openai_vpt/
 weights/mineclip/*.pth
 weights/vpt/*.model
 weights/vpt/*.weights
