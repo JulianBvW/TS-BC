@@ -49,7 +49,7 @@ def search(latent):
     episode_id, episode_start = episode_actions.episode_starts[episode]
     episode_start = int(episode_start)
 
-    episode_frame = nearest_idx - episode_start + SLIDING_WINDOW_SIZE #-/+ 1 # TODO
+    episode_frame = nearest_idx - episode_start + SLIDING_WINDOW_SIZE - 1
     log.append(f'[Frame {frame_counter} ({frame_counter // 20 // 60}:{(frame_counter // 20) % 60})] Found nearest in {episode_id} at frame {episode_frame} ({episode_frame // 20 // 60}:{(episode_frame // 20) % 60})')
 
     return nearest_idx
