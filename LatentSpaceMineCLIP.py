@@ -35,9 +35,8 @@ class LatentSpaceMineCLIP:
         for i in range(sliding_window_frames.shape[0] // inter_batch_size + 1):
             inter_batch_frames = sliding_window_frames[i*inter_batch_size:(i+1)*inter_batch_size].to('cuda')
 
-            frame_latents = mineclip_model.forward_image_features(inter_batch_frames)
-            latents = mineclip_model.forward_video_features(frame_latents)  # TODO Replace with mineclip.encode_video (https://github.com/MineDojo/MineCLIP/blob/main/mineclip/mineclip/mineclip.py)
-
+            latents = mineclip_model.encode_video(inter_batch_frames)
+            
             self.latents += [latent.astype('float16') for latent in latents.to('cpu').numpy()]
 
             del(inter_batch_frames)

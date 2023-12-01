@@ -40,9 +40,7 @@ def search(sliding_window_frames):
     global log, frame_counter
 
     frame_window = torch.from_numpy(np.array(sliding_window_frames)).unsqueeze(0).to('cuda')
-    frame_latents = mineclip_model.forward_image_features(frame_window)
-    latent = mineclip_model.forward_video_features(frame_latents)
-    latent = latent[0]
+    latent = mineclip_model.encode_video(frame_window)[0]
     del(frame_window)
 
     nearest_idx = latent_space_mineclip.get_nearest(latent)
