@@ -69,7 +69,7 @@ def get_action(latent, frame_counter):
 
     action, is_null_action = episode_actions.actions[nearest_idx + follow_frame]
     if action is None:
-        log.append(f'[Frame {frame_counter} ({frame_counter // 20 // 60}:{(frame_counter // 20) % 60})] End of episode')
+        print(f'[Frame {frame_counter} ({frame_counter // 20 // 60}:{(frame_counter // 20) % 60})] End of episode')
         nearest_idx = search(latent)
         return env.action_space.noop()
 
