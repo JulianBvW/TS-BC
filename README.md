@@ -33,6 +33,7 @@ pip install git+https://github.com/MineDojo/MineCLIP
   - VPT: [Model file](https://openaipublic.blob.core.windows.net/minecraft-rl/models/foundation-model-1x.model) and [Weight file](https://openaipublic.blob.core.windows.net/minecraft-rl/models/foundation-model-1x.weights)
   - MineCLIP: [`attn.pth`](https://drive.google.com/file/d/1uaZM1ZLBz2dZWcn85rZmjP7LV6Sg5PZW/view)
 6. **TODO Submodule?** Download OpenAI VPT Repo and rename to `openai_vpt`
+7. **TODO Umap** `pip install numba scikit-learn umap-learn umap-learn[plot]`
 
 ### Training
 
