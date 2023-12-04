@@ -11,7 +11,7 @@ agent_duration = agent_recording.shape[0]
 
 # Read duration of followed trajectory
 dataset = VPTDataset()
-with open('agent_log.txt', 'r') as f:
+with open('output/agent_log.txt', 'r') as f:
     log = f.readlines()
     agent_frames = list(map(lambda x: int(x.split(' ')[1]), log))
     vid_ids      = list(map(lambda x: str(x.split(' ')[6]), log))
