@@ -6,7 +6,7 @@ from tqdm import tqdm
 from VPTDataset import VPTDataset
 
 # Load agent recording
-agent_recording = skvideo.io.vread('agent_recording.mp4')
+agent_recording = skvideo.io.vread('output/agent_recording.mp4')
 agent_duration = agent_recording.shape[0]
 
 # Read duration of followed trajectory
@@ -27,7 +27,7 @@ for agent_frame, vid_id, vid_frame, duration in tqdm(list(zip(agent_frames, vid_
 comb_video = np.concatenate([agent_recording, dataset_video], axis=1)
 
 # Write mp4 file
-video_writer = cv2.VideoWriter('analyse_video.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 20, (640, 2*360))
+video_writer = cv2.VideoWriter('output/analyse_video.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 20, (640, 2*360))
 for frame in comb_video:
     video_writer.write(cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
 video_writer.release()
