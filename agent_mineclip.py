@@ -26,7 +26,7 @@ frame_counter = 0
 nearest_idx = 0
 
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-video_writer = cv2.VideoWriter('agent_recording.mp4', fourcc, 20, (640, 360))
+video_writer = cv2.VideoWriter('output/agent_recording.mp4', fourcc, 20, (640, 360))
 
 mineclip_model = load_mineclip()
 sliding_window_frames = []
@@ -140,7 +140,7 @@ with torch.no_grad():
         env.render()
 
 video_writer.release()
-with open('agent_log.txt', 'w') as f:
+with open('output/agent_log.txt', 'w') as f:
     for m in log:
         f.write(m)
         f.write('\n')
