@@ -35,5 +35,5 @@ class EpisodeActions:
             self.actions.append(to_minerl_action(action))
             self.frame_counter += 1
         
-        self.actions.append((None, True))  # Append Null Action for last frame
+        self.actions.append(to_minerl_action(None))  # Append Null Action for last frame
         self.frame_counter += 1

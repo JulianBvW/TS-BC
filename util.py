@@ -83,6 +83,9 @@ def to_minerl_action(json_action):
     
     action = MINERL_ACTION.copy()
 
+    if json_action is None:
+        return action, is_null_action
+
     # Mouse movement
     dx = cap(json_action['mouse']['dx'] * CAMERA_SCALER)
     dy = cap(json_action['mouse']['dy'] * CAMERA_SCALER)
