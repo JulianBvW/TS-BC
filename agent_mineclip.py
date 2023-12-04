@@ -9,6 +9,8 @@ from minerl.herobraine.env_specs.human_survival_specs import HumanSurvival
 from EpisodeActions import EpisodeActions
 from LatentSpaceMineCLIP import LatentSpaceMineCLIP, load_mineclip, AGENT_RESOLUTION, SLIDING_WINDOW_SIZE
 
+TEXT_GOAL = 'mine diamond ore'
+
 MAX_FRAMES = 2*60*20
 ENV_KWARGS = dict(
     fov_range=[70, 70],
@@ -35,6 +37,30 @@ episode_actions.load()
 
 latent_space_mineclip = LatentSpaceMineCLIP()
 latent_space_mineclip.load()
+
+text_latent = mineclip_model.encode_text(TEXT_GOAL)[0].detach()
+print('### TEXT LATENT of shape', text_latent.shape)
+
+goal_distances = latent_space_mineclip.get_distances(text_latent)
+print('### Goal distances of shape', goal_distances.shape)
+print(goal_distances)
+import pandas as pd
+print(pd.Series(goal_distances.to('cpu')).describe())
+
+nearest_idx = latent_space_mineclip.get_nearest(text_latent)
+nearest_idx = nearest_idx.to('cpu').item()
+
+episode = 0
+while episode+1 < len(episode_actions.episode_starts) and int(episode_actions.episode_starts[episode+1][1]) <= nearest_idx:
+    episode += 1
+episode_id, episode_start = episode_actions.episode_starts[episode]
+episode_start = int(episode_start)
+
+episode_frame = nearest_idx - episode_start + SLIDING_WINDOW_SIZE - 1
+print(f'[Frame {frame_counter} ({frame_counter // 20 // 60}:{(frame_counter // 20) % 60})] Found nearest in {episode_id} at frame {episode_frame} ({episode_frame // 20 // 60}:{(episode_frame // 20) % 60})')
+
+
+
 
 def search(sliding_window_frames):
     global log, frame_counter

@@ -53,9 +53,13 @@ class LatentSpaceMineCLIP:
 
         # del(frames)
 
-    def get_nearest(self, latent): # TODO episode_start is removed
+    def get_distances(self, latent):  # TODO look at different norms
         diffs = self.latents - latent
         diffs = abs(diffs).sum(1)  # Sum up along the single latents exponential difference to the current latent
+        return diffs
+
+    def get_nearest(self, latent): # TODO episode_start is removed
+        diffs = self.get_distances(latent)
         nearest_idx = diffs.argmin()#.to('cpu').item() # TODO remove .to('cpu').item()
         return nearest_idx
 
