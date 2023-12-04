@@ -4,12 +4,13 @@ import torch
 import minerl
 import numpy as np
 from tqdm import tqdm
+import torch.nn.functional as F
 from minerl.herobraine.env_specs.human_survival_specs import HumanSurvival
 
 from EpisodeActions import EpisodeActions
 from LatentSpaceMineCLIP import LatentSpaceMineCLIP, load_mineclip, AGENT_RESOLUTION, SLIDING_WINDOW_SIZE
 
-TEXT_GOAL = 'mine diamond ore'
+TEXT_GOAL = 'chop a tree'
 
 MAX_FRAMES = 2*60*20
 ENV_KWARGS = dict(
@@ -43,7 +44,7 @@ print('### TEXT LATENT of shape', text_latent.shape)
 
 goal_distances = latent_space_mineclip.get_distances(text_latent)
 print('### Goal distances of shape', goal_distances.shape)
-print(goal_distances)
+print(goal_distances[len(goal_distances)-10:])
 import pandas as pd
 print(pd.Series(goal_distances.to('cpu')).describe())
 
@@ -59,7 +60,14 @@ episode_start = int(episode_start)
 episode_frame = nearest_idx - episode_start + SLIDING_WINDOW_SIZE - 1
 print(f'[Frame {frame_counter} ({frame_counter // 20 // 60}:{(frame_counter // 20) % 60})] Found nearest in {episode_id} at frame {episode_frame} ({episode_frame // 20 // 60}:{(episode_frame // 20) % 60})')
 
+ROLLING_SIZE = 3
 
+goal_distances_padding = F.pad(goal_distances, (0, ROLLING_SIZE-1), 'constant', float('inf'))
+goal_distances_rolling = goal_distances_padding.unfold(0, ROLLING_SIZE, 1)
+future_goal_distances = goal_distances_rolling.min(1).values
+
+print(future_goal_distances[len(future_goal_distances)-10:])
+print(pd.Series(future_goal_distances.to('cpu')).describe())
 
 
 def search(sliding_window_frames):
