@@ -47,5 +47,6 @@ This will generate 4 files in `./weights/ts_bc/` that store
 
 ### Inference
 
-**TODO**
-Run the agent: `python agent_vpt.py`.
+Run the agent: `python run_agent.py`.
+> [!NOTE]
+> If you run the agent on a headless machine, use `xvfb-run python run_agent.py`
