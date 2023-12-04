@@ -4,14 +4,15 @@ import torch
 import minerl
 import numpy as np
 from tqdm import tqdm
+import torch.nn.functional as F
 from minerl.herobraine.env_specs.human_survival_specs import HumanSurvival
 
 from EpisodeActions import EpisodeActions
 from LatentSpaceMineCLIP import LatentSpaceMineCLIP, load_mineclip, AGENT_RESOLUTION, SLIDING_WINDOW_SIZE
 
-TEXT_GOAL = 'mine diamond ore'
+TEXT_GOAL = 'gather wood'
 
-MAX_FRAMES = 2*60*20
+MAX_FRAMES = 1*60*20
 ENV_KWARGS = dict(
     fov_range=[70, 70],
     frameskip=1,
@@ -43,7 +44,7 @@ print('### TEXT LATENT of shape', text_latent.shape)
 
 goal_distances = latent_space_mineclip.get_distances(text_latent)
 print('### Goal distances of shape', goal_distances.shape)
-print(goal_distances)
+print(goal_distances[len(goal_distances)-10:])
 import pandas as pd
 print(pd.Series(goal_distances.to('cpu')).describe())
 
@@ -59,7 +60,14 @@ episode_start = int(episode_start)
 episode_frame = nearest_idx - episode_start + SLIDING_WINDOW_SIZE - 1
 print(f'[Frame {frame_counter} ({frame_counter // 20 // 60}:{(frame_counter // 20) % 60})] Found nearest in {episode_id} at frame {episode_frame} ({episode_frame // 20 // 60}:{(episode_frame // 20) % 60})')
 
+ROLLING_SIZE = 20*20
 
+goal_distances_padding = F.pad(goal_distances, (0, ROLLING_SIZE-1), 'constant', float('inf'))
+goal_distances_rolling = goal_distances_padding.unfold(0, ROLLING_SIZE, 1)
+future_goal_distances = goal_distances_rolling.min(1).values
+
+print(future_goal_distances[len(future_goal_distances)-10:])
+print(pd.Series(future_goal_distances.to('cpu')).describe())
 
 
 def search(sliding_window_frames):
@@ -69,8 +77,11 @@ def search(sliding_window_frames):
     latent = mineclip_model.encode_video(frame_window)[0]
     del(frame_window)
 
-    nearest_idx = latent_space_mineclip.get_nearest(latent)
-    nearest_idx = nearest_idx.to('cpu').item()
+    # nearest_idx = latent_space_mineclip.get_nearest(latent)
+    # nearest_idx = nearest_idx.to('cpu').item()
+
+    bla = future_goal_distances + latent_space_mineclip.get_distances(latent)
+    nearest_idx = bla.argmin().to('cpu').item()
 
     episode = 0
     while episode+1 < len(episode_actions.episode_starts) and int(episode_actions.episode_starts[episode+1][1]) <= nearest_idx:
