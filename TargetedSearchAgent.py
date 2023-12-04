@@ -43,7 +43,7 @@ class TargetedSearchAgent():
 
         if self.frame_counter < 20:  # Warmup phase ; Turn around
             action = self.env.action_space.noop()
-            action['camera'] = [0, 10]
+            action['camera'] = [0, 20]
             return action
 
         if self.nearest_idx is None or self.follow_frame > self.max_follow_frames:  # Redo the search if trajectory is followed too long
