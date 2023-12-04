@@ -17,6 +17,7 @@ class EpisodeActions:
         self.episode_starts = np.load(episode_starts_file, allow_pickle=True)
 
         print(f'Loaded actions from {len(self.episode_starts)} episodes')
+        return self
 
     def save(self, actions_file='weights/ts_bc/actions', episode_starts_file='weights/ts_bc/episode_starts'):
         actions = np.array(self.actions)
