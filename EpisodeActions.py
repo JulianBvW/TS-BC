@@ -14,7 +14,7 @@ class EpisodeActions:
     @torch.no_grad()
     def load(self, actions_file='weights/ts_bc/actions.npy', episode_starts_file='weights/ts_bc/episode_starts.npy'):
         self.actions = np.load(actions_file, allow_pickle=True)
-        self.episode_starts = np.load(episode_starts_file, allow_pickle=True)
+        self.episode_starts = np.load(episode_starts_file, allow_pickle=False)
 
         print(f'Loaded actions from {len(self.episode_starts)} episodes')
         return self
@@ -37,3 +37,6 @@ class EpisodeActions:
         
         self.actions.append(to_minerl_action(None))  # Append Null Action for last frame
         self.frame_counter += 1
+    
+    def is_last(self, idx):
+        return str(idx + 1) in self.episode_starts[:, 1] or idx + 1 >= len(self.actions)

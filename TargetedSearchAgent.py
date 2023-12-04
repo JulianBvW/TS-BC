@@ -46,14 +46,10 @@ class TargetedSearchAgent():
             action['camera'] = [0, 20]
             return action
 
-        if self.nearest_idx is None or self.follow_frame > self.max_follow_frames:  # Redo the search if trajectory is followed too long
+        if self.should_search_again:
             self.search(latent)
 
         action, is_null_action = self.episode_actions.actions[self.nearest_idx + self.follow_frame]
-        if action is None:
-            print(f'[Frame {self.frame_counter} ({self.frame_counter // 20 // 60}:{(self.frame_counter // 20) % 60})] End of episode')
-            self.search(latent)
-            return self.env.action_space.noop()
 
         return action
     
@@ -80,10 +76,16 @@ class TargetedSearchAgent():
         self.follow_frame = -1
 
         self.log_new_nearest()
+    
+    def should_search_again(self):
+        return self.nearest_idx is None \
+            or self.follow_frame > self.max_follow_frames \
+            or self.episode_actions.is_last(self.nearest_idx + self.follow_frame) \
+            or False  # TODO difference to reference latent
 
     def log_new_nearest(self):
         episode = 0
-        while episode+1 < len(self.episode_actions.episode_starts) and int(self.episode_actions.episode_starts[episode+1][1]) <= self.nearest_idx:
+        while episode+1 < len(self.episode_actions.episode_starts) and int(self.episode_actions.episode_starts[episode+1][1]) <= self.nearest_idx:  # TODO remove int()
             episode += 1
         episode_id, episode_start = self.episode_actions.episode_starts[episode]
         episode_start = int(episode_start)
