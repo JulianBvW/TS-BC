@@ -15,6 +15,7 @@ class LatentSpaceMineCLIP:
     def load(self, latents_file='weights/ts_bc/latents_mineclip.npy'):
         self.latents = torch.from_numpy(np.load(latents_file, allow_pickle=True)).to('cuda')
         print(f'Loaded MineCLIP latent space with {len(self.latents)} latents')
+        return self
     
     def save(self, latents_file='weights/ts_bc/latents_mineclip'):
         latents = np.array(self.latents)
