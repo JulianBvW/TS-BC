@@ -8,7 +8,7 @@ from EpisodeActions import EpisodeActions
 from LatentSpaceMineCLIP import LatentSpaceMineCLIP, load_mineclip, AGENT_RESOLUTION, SLIDING_WINDOW_SIZE
 
 class TargetedSearchAgent():
-    def __init__(self, env, max_follow_frames=20, goal_rolling_window_size=20*20, device='cuda'):
+    def __init__(self, env, max_follow_frames=2*20, goal_rolling_window_size=20*20, device='cuda'):
         self.env = env
         self.past_frames = []
         self.frame_counter = 0  # How many frames the agent has played
@@ -17,7 +17,7 @@ class TargetedSearchAgent():
 
         self.redo_search_counter = 0  # TODO better name?
         self.redo_search_threshold = 5
-        self.diff_threshold = 150.0  # TODO which number?
+        self.diff_threshold = 90.0  # TODO which number?
 
         self.diff_log = []
         self.search_log = []
@@ -26,6 +26,9 @@ class TargetedSearchAgent():
         self.mineclip_model = load_mineclip(device=self.device)
         self.episode_actions = EpisodeActions().load()
         self.latent_space_mineclip = LatentSpaceMineCLIP(device=self.device).load()
+
+        self.same_episode_penalty = torch.zeros(len(self.episode_actions.actions)).to(self.device)
+        self.select_same_penalty = 10.0  # TODO
 
         self.nearest_idx = None
         self.current_goal = None
@@ -77,10 +80,18 @@ class TargetedSearchAgent():
     
     def search(self, latent):
         if self.current_goal is None:
-            raise Exception('Goal is not set.') 
+            raise Exception('Goal is not set.')
+    
+        # Reduce the penalty for choosing the same episode
+        self.same_episode_penalty = torch.maximum(self.same_episode_penalty - 1, torch.tensor(0))
 
+        # Search for the next trajectory based on the goal and current state
         possible_trajectories = self.future_goal_distances + self.latent_space_mineclip.get_distances(latent)
+        possible_trajectories += self.same_episode_penalty
         self.nearest_idx = possible_trajectories.argmin().to('cpu').item()
+
+        # Give a penalty to the episode (TODO currently window around) that has been chosen
+        self.same_episode_penalty[max(self.nearest_idx-200, 0):self.nearest_idx+200] = self.select_same_penalty
 
         self.follow_frame = -1
         self.redo_search_counter = 0
