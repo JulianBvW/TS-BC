@@ -17,9 +17,10 @@ class TargetedSearchAgent():
 
         self.redo_search_counter = 0  # TODO better name?
         self.redo_search_threshold = 5
-        self.diff_threshold = 90.0  # TODO which number?
+        self.diff_threshold = 150.0  # TODO which number?
 
-        self.log = []
+        self.diff_log = []
+        self.search_log = []
         self.device = device
 
         self.mineclip_model = load_mineclip(device=self.device)
@@ -51,6 +52,7 @@ class TargetedSearchAgent():
         if self.frame_counter < 20:  # Warmup phase ; Turn around
             action = self.env.action_space.noop()
             action['camera'] = [0, 20]
+            self.diff_log.append(0)  # TODO remove
             return action
 
         if self.should_search_again(latent):
@@ -94,10 +96,16 @@ class TargetedSearchAgent():
             or self.redo_search_counter >= self.redo_search_threshold
         
     def calc_follow_difference(self, latent):
-        if self.nearest_idx is None or self.follow_frame < 0.33 * self.max_follow_frames:
+        if self.nearest_idx is None:
+            self.diff_log.append(0)
             return
-        
+
         diff_to_follow_latent = self.latent_space_mineclip.get_distance(self.nearest_idx + self.follow_frame, latent)
+        self.diff_log.append(diff_to_follow_latent.to('cpu').item())
+
+        if self.follow_frame < 0.33 * self.max_follow_frames:
+            return  # TODO put back in prior `if`
+
         if diff_to_follow_latent > self.diff_threshold:
             self.redo_search_counter += 1
         else:
@@ -111,4 +119,4 @@ class TargetedSearchAgent():
         episode_start = int(episode_start)
 
         episode_frame = self.nearest_idx - episode_start + SLIDING_WINDOW_SIZE - 1
-        self.log.append(f'[Frame {self.frame_counter} ({self.frame_counter // 20 // 60}:{(self.frame_counter // 20) % 60})] Found nearest in {episode_id} at frame {episode_frame} ({episode_frame // 20 // 60}:{(episode_frame // 20) % 60})')
+        self.search_log.append(f'[Frame {self.frame_counter} ({self.frame_counter // 20 // 60}:{(self.frame_counter // 20) % 60})] Found nearest in {episode_id} at frame {episode_frame} ({episode_frame // 20 // 60}:{(episode_frame // 20) % 60})')

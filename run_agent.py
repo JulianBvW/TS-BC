@@ -37,8 +37,11 @@ def main(args):
 
     video_writer.release()
     with open('output/agent_log.txt', 'w') as f:
-        for m in agent.log:
+        for m in agent.search_log:
             f.write(m + '\n')
+    with open('output/agent_diff_log.txt', 'w') as f:
+        for m in agent.diff_log:
+            f.write(str(m) + '\n')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
