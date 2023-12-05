@@ -43,18 +43,6 @@ class LatentSpaceMineCLIP:
 
             del(inter_batch_frames)
 
-        #frames = torch.tensor(np.transpose(resized_frames, (0, 3, 2, 1))).to(self.device) # TODO Batch Training with: np.transpose(sliding_window_view(frames, 5, 0), (0, 4, 1, 2, 3))
-
-        # for ts in range(16, len(frames)):
-        #     frame_window = frames[ts-16:ts].unsqueeze(0)  # Add 1 extra dimension for mineclip
-        #     frame_latents = mineclip_model.forward_image_features(frame_window)
-        #     latent = mineclip_model.forward_video_features(frame_latents)
-        #     latent = latent[0].to('cpu').numpy().astype('float16')
-
-        #     self.latents.append(latent)
-
-        # del(frames)
-
     def get_distances(self, latent):  # TODO look at different norms
         diffs = self.latents - latent
         diffs = torch.abs(diffs).sum(1)  # Sum up along the single latents exponential difference to the current latent
@@ -69,14 +57,6 @@ class LatentSpaceMineCLIP:
         diffs = self.get_distances(latent)
         nearest_idx = diffs.argmin()#.to('cpu').item() # TODO remove .to('cpu').item()
         return nearest_idx
-
-        episode = 0
-        while episode+1 < len(self.episode_starts) and int(self.episode_starts[episode+1][1]) <= nearest_idx:
-            episode += 1
-        episode_id, episode_start = self.episode_starts[episode]
-        episode_start = int(episode_start)
-
-        print(f'Found nearest in {episode_id} at frame {nearest_idx - episode_start} ({(nearest_idx - episode_start) // 20 // 60}:{((nearest_idx - episode_start) // 20) % 60})')
 
 def load_mineclip(weights_file='weights/mineclip/attn.pth', device='cuda'):  # TODO: in it's own file?
     mineclip = MineCLIP(arch='vit_base_p16_fz.v2.t2', hidden_dim=512, image_feature_dim=512, mlp_adapter_spec='v0-2.t0', pool_type='attn.d2.nh8.glusw', resolution=[160, 256])
