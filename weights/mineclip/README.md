@@ -1,1 +1,1 @@
-Download `mineclip-attn.pth`
+Download `attn.pth`
