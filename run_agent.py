@@ -21,6 +21,7 @@ def main(args):
     video_writer = cv2.VideoWriter('output/agent_recording.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 20, (640, 360))
     os.makedirs('output/', exist_ok=True)
 
+    # HumanSurvival is a sandbox `gym`` environment for Minecraft with no set goal or timeframe
     env = HumanSurvival(**ENV_KWARGS).make()
     agent = TargetedSearchAgent(env, device=args.device)
     agent.set_goal(args.goal)

@@ -36,6 +36,11 @@ class TargetedSearchAgent():
         self.goal_rolling_window_size = goal_rolling_window_size
     
     def set_goal(self, text_goal):
+        '''
+        Compute the `future_goal_distances` array that show
+        how far near the goal an agent can become when following 
+        a certain dataset episode frame for some time.
+        '''
         self.current_goal = text_goal
         text_latent = self.mineclip_model.encode_text(self.current_goal)[0].detach()
         goal_distances = self.latent_space_mineclip.get_distances(text_latent)
@@ -101,6 +106,11 @@ class TargetedSearchAgent():
     def should_search_again(self, latent):
         self.calc_follow_difference(latent)
         
+        # Trigger a new search if
+        #   1. there has not been a search yet,
+        #   2. we followed a trajectory for too long,
+        #   3. the reference trajectory ends, or
+        #   4. the divergence between our state and the reference is too high.
         return self.nearest_idx is None \
             or self.follow_frame > self.max_follow_frames \
             or self.episode_actions.is_last(self.nearest_idx + self.follow_frame) \
@@ -111,12 +121,15 @@ class TargetedSearchAgent():
             self.diff_log.append(0)
             return
 
+        # Compute current difference
         diff_to_follow_latent = self.latent_space_mineclip.get_distance(self.nearest_idx + self.follow_frame, latent)
         self.diff_log.append(diff_to_follow_latent.to('cpu').item())
 
+        # After selecting a new trajectory, follow it for the first few frames
         if self.follow_frame < 0.33 * self.max_follow_frames:
             return  # TODO put back in prior `if`
 
+        # Increase or decrease the counter based on the difference to the reference
         if diff_to_follow_latent > self.diff_threshold:
             self.redo_search_counter += 1
         else:
