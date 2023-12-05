@@ -58,6 +58,11 @@ class LatentSpaceMineCLIP:
         diffs = self.latents - latent
         diffs = abs(diffs).sum(1)  # Sum up along the single latents exponential difference to the current latent
         return diffs
+    
+    def get_distance(self, idx, latent):  # TODO refactor to use `self.distance_function` or something
+        diff = self.latents[idx] - latent
+        diff = abs(diff).sum()
+        return diff
 
     def get_nearest(self, latent): # TODO episode_start is removed
         diffs = self.get_distances(latent)

@@ -15,6 +15,10 @@ class TargetedSearchAgent():
         self.follow_frame = -1
         self.max_follow_frames = max_follow_frames
 
+        self.redo_search_counter = 0  # TODO better name?
+        self.redo_search_threshold = 5
+        self.diff_threshold = 90.0  # TODO which number?
+
         self.log = []
 
         self.mineclip_model = load_mineclip()
@@ -46,7 +50,7 @@ class TargetedSearchAgent():
             action['camera'] = [0, 20]
             return action
 
-        if self.should_search_again:
+        if self.should_search_again(latent):
             self.search(latent)
 
         action, is_null_action = self.episode_actions.actions[self.nearest_idx + self.follow_frame]
@@ -74,14 +78,27 @@ class TargetedSearchAgent():
         self.nearest_idx = possible_trajectories.argmin().to('cpu').item()
 
         self.follow_frame = -1
+        self.redo_search_counter = 0
 
         self.log_new_nearest()
     
-    def should_search_again(self):
+    def should_search_again(self, latent):
+        self.calc_follow_difference(latent)
+        
         return self.nearest_idx is None \
             or self.follow_frame > self.max_follow_frames \
             or self.episode_actions.is_last(self.nearest_idx + self.follow_frame) \
-            or False  # TODO difference to reference latent
+            or self.redo_search_counter >= self.redo_search_threshold
+        
+    def calc_follow_difference(self, latent):
+        if self.nearest_idx is None or self.follow_frame < 0.33 * self.max_follow_frames:
+            return
+        
+        diff_to_follow_latent = self.latent_space_mineclip.get_distance(self.nearest_idx + self.follow_frame, latent)
+        if diff_to_follow_latent > self.diff_threshold:
+            self.redo_search_counter += 1
+        else:
+            self.redo_search_counter = min(self.redo_search_counter - 1, 0)
 
     def log_new_nearest(self):
         episode = 0
