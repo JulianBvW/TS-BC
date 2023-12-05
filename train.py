@@ -6,18 +6,6 @@ from EpisodeActions import EpisodeActions
 from LatentSpaceVPT import LatentSpaceVPT, load_vpt
 from LatentSpaceMineCLIP import LatentSpaceMineCLIP, load_mineclip
 
-def train_vpt():
-    latent_space_vpt = LatentSpaceVPT()
-    vpt_model = load_vpt()
-
-    latent_space_vpt.train_on_sample(vpt_model, sample_size=5)
-
-def train_mineclip():
-    latent_space_mineclip = LatentSpaceMineCLIP()
-    mineclip_model = load_mineclip()
-
-    latent_space_mineclip.train_on_sample(mineclip_model, sample_size=50)
-
 def main(args):
     dataset = VPTDataset()
 
