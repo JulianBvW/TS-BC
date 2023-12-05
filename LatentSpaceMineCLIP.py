@@ -8,12 +8,13 @@ AGENT_RESOLUTION = (256, 160)  # (W, H)
 SLIDING_WINDOW_SIZE = 16
 
 class LatentSpaceMineCLIP:
-    def __init__(self):
+    def __init__(self, device="cuda"):
         self.latents = []  # Python List while training, Numpy array while inference
+        self.device = device
     
     @torch.no_grad()
     def load(self, latents_file='weights/ts_bc/latents_mineclip.npy'):
-        self.latents = torch.from_numpy(np.load(latents_file, allow_pickle=True)).to('cuda')
+        self.latents = torch.from_numpy(np.load(latents_file, allow_pickle=True)).to(self.device)
         print(f'Loaded MineCLIP latent space with {len(self.latents)} latents')
         return self
     
@@ -34,7 +35,7 @@ class LatentSpaceMineCLIP:
 
         inter_batch_size = 100
         for i in range(sliding_window_frames.shape[0] // inter_batch_size + 1):
-            inter_batch_frames = sliding_window_frames[i*inter_batch_size:(i+1)*inter_batch_size].to('cuda')
+            inter_batch_frames = sliding_window_frames[i*inter_batch_size:(i+1)*inter_batch_size].to(self.device)
 
             latents = mineclip_model.encode_video(inter_batch_frames)
             
@@ -42,7 +43,7 @@ class LatentSpaceMineCLIP:
 
             del(inter_batch_frames)
 
-        #frames = torch.tensor(np.transpose(resized_frames, (0, 3, 2, 1))).to('cuda') # TODO Batch Training with: np.transpose(sliding_window_view(frames, 5, 0), (0, 4, 1, 2, 3))
+        #frames = torch.tensor(np.transpose(resized_frames, (0, 3, 2, 1))).to(self.device) # TODO Batch Training with: np.transpose(sliding_window_view(frames, 5, 0), (0, 4, 1, 2, 3))
 
         # for ts in range(16, len(frames)):
         #     frame_window = frames[ts-16:ts].unsqueeze(0)  # Add 1 extra dimension for mineclip
@@ -56,7 +57,7 @@ class LatentSpaceMineCLIP:
 
     def get_distances(self, latent):  # TODO look at different norms
         diffs = self.latents - latent
-        diffs = abs(diffs).sum(1)  # Sum up along the single latents exponential difference to the current latent
+        diffs = torch.abs(diffs).sum(1)  # Sum up along the single latents exponential difference to the current latent
         return diffs
 
     def get_nearest(self, latent): # TODO episode_start is removed
@@ -76,4 +77,4 @@ def load_mineclip(weights_file='weights/mineclip/attn.pth', device="cuda"):  # T
     mineclip = MineCLIP(arch='vit_base_p16_fz.v2.t2', hidden_dim=512, image_feature_dim=512, mlp_adapter_spec='v0-2.t0', pool_type='attn.d2.nh8.glusw', resolution=[160, 256])
     mineclip.load_ckpt(weights_file, strict=True)
 
-    return mineclip.to('cuda')
+    return mineclip.to(device)

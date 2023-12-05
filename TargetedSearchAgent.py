@@ -8,23 +8,24 @@ from EpisodeActions import EpisodeActions
 from LatentSpaceMineCLIP import LatentSpaceMineCLIP, load_mineclip, AGENT_RESOLUTION, SLIDING_WINDOW_SIZE
 
 class TargetedSearchAgent():
-    def __init__(self, env, max_follow_frames=20, goal_rolling_window_size=20*20):
+    def __init__(self, env, max_follow_frames=20, goal_rolling_window_size=20*20, device="cuda"):
         self.env = env
         self.past_frames = []
-        self.frame_counter = 0
-        self.follow_frame = -1
-        self.max_follow_frames = max_follow_frames
+        self.frame_counter = 0  # How many frames the agent has played
+        self.follow_frame = -1  # How many frames from the trajectory we have followed
+        self.max_follow_frames = max_follow_frames  # How many frames we can follow before searching for a new trajectory
 
         self.log = []
 
-        self.mineclip_model = load_mineclip()
+        self.mineclip_model = load_mineclip(device=device)
         self.episode_actions = EpisodeActions().load()
-        self.latent_space_mineclip = LatentSpaceMineCLIP().load()
+        self.latent_space_mineclip = LatentSpaceMineCLIP(device=device).load()
 
         self.nearest_idx = None
         self.current_goal = None
         self.future_goal_distances = None
         self.goal_rolling_window_size = goal_rolling_window_size
+        self.device = device
     
     def set_goal(self, goal_text):
         self.current_goal = goal_text
@@ -60,7 +61,7 @@ class TargetedSearchAgent():
         if len(self.past_frames) > SLIDING_WINDOW_SIZE:
             self.past_frames.pop(0)
 
-        frame_window = torch.from_numpy(np.array(self.past_frames)).unsqueeze(0).to('cuda')
+        frame_window = torch.from_numpy(np.array(self.past_frames)).unsqueeze(0).to(self.device)
         latent = self.mineclip_model.encode_video(frame_window)[0]
         del(frame_window)
 

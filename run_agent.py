@@ -7,6 +7,8 @@ from minerl.herobraine.env_specs.human_survival_specs import HumanSurvival
 
 from TargetedSearchAgent import TargetedSearchAgent
 
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
 TEXT_GOAL = 'gather wood'
 
 MAX_FRAMES = 1*60*20
@@ -23,7 +25,7 @@ video_writer = cv2.VideoWriter('output/agent_recording.mp4', cv2.VideoWriter_fou
 os.makedirs('output/', exist_ok=True)
 
 env = HumanSurvival(**ENV_KWARGS).make()
-agent = TargetedSearchAgent(env)
+agent = TargetedSearchAgent(env, device=device)
 agent.set_goal(TEXT_GOAL)
 
 obs = env.reset()
