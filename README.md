@@ -39,6 +39,8 @@ git submodule update
 ```
 7. ~~**TODO Umap** `pip install numba scikit-learn umap-learn umap-learn[plot]`~~ (later for analysing)
 
+---
+
 ### Run the model
 
 ##### Training
@@ -56,6 +58,8 @@ This will generate 4 files in `./weights/ts_bc/` that store
 Run the agent: `python run_agent.py`.
 
 **Note:** If you run the agent on a headless machine, use `xvfb-run python run_agent.py`
+
+---
 
 ### How the model works
 
@@ -91,6 +95,8 @@ There are 4 conditions seen in `TargetedSearchAgent::should_search_again()` that
 2. **Timeout:** The parameter `max_follow_frames` controlls, how long a trajectory can be followed before the search has to be done again.
 3. **Episode end:** When the episode from the dataset ends, a new search has to take place.
 4. **Divergence:** If the difference from the current state to the frame of the episode the agent currently follow exceeds a certain threshold, the search has to be done again.
+
+---
 
 ###### Detailed explanations
 
