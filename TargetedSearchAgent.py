@@ -143,4 +143,4 @@ class TargetedSearchAgent():
         episode_start = int(episode_start)
 
         episode_frame = self.nearest_idx - episode_start + SLIDING_WINDOW_SIZE - 1
-        self.search_log.append(f'[Frame {self.frame_counter} ({self.frame_counter // 20 // 60}:{(self.frame_counter // 20) % 60})] Found nearest in {episode_id} at frame {episode_frame} ({episode_frame // 20 // 60}:{(episode_frame // 20) % 60})')
+        self.search_log.append(f'[Frame {self.frame_counter:04} ({self.frame_counter // 20 // 60}:{(self.frame_counter // 20) % 60:02})] Found nearest in {episode_id} at frame {episode_frame} ({episode_frame // 20 // 60}:{(episode_frame // 20) % 60:02})')
