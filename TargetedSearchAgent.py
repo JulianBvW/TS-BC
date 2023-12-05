@@ -40,6 +40,8 @@ class TargetedSearchAgent():
         goal_distances_rolling = goal_distances_padding.unfold(0, self.goal_rolling_window_size, 1)
         self.future_goal_distances = goal_distances_rolling.min(1).values
 
+        print(f'Set new goal: \"{self.current_goal}\"')
+
     def get_action(self, obs):
         self.follow_frame += 1
         self.frame_counter += 1
