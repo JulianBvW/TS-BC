@@ -133,7 +133,7 @@ class TargetedSearchAgent():
         if diff_to_follow_latent > self.diff_threshold:
             self.redo_search_counter += 1
         else:
-            self.redo_search_counter = min(self.redo_search_counter - 1, 0)
+            self.redo_search_counter = max(self.redo_search_counter - 1, 0)
 
     def log_new_nearest(self):
         episode = 0
