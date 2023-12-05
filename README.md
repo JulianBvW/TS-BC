@@ -67,13 +67,13 @@ The basic idea is to calculate the **similarity between the current agent state 
 Searching these similarities you can find situations from the dataset that are similar to the current state which lets the agent **copy the next actions** done in the dataset.
 Using the MineCLIP text encoder the agent **searches for dataset episodes where a given goal is reached** and combines them with the episodes that are similar to the agent to find a trajectory that would **bring the agent close to the given goal**.
 
-##### Latent point cloud
+##### # Latent point cloud
 
 To compute the similarities, every frame from the dataset as well as at inference from the agent will be transformed into a latent representation by the MineCLIP video encoder.
 These 512-dim points are saved in an array `latents_mineclip` of all frames from all episodes of shape `(N_episodes * Frames_per_episode, 512)`.
 Another array `episode_starts` will keep track on where episodes end while an `actions` array saves the actions made between the frames.
 
-##### The search algorithm
+##### # The search algorithm
 
 During inference, when the gym environment asks for the next action, the agent is presented with the latent representation of its current state (`latent`) and the latent representation of every dataset frame. It now computes the distances from its latent to every dataset frame in `LatentSpaceMineCLIP::get_distances(latent)`. In standard, non-targeted S-BC the agent would choose the argmin of these distances to get the closest point and copy the actions done from this frame until a new search is done.
 
@@ -81,13 +81,13 @@ In targeted S-BC, the agent will also take the goal into account. For that it co
 
 When searching for a trajectory in `TargetedSearchAgent::search(latent)`, instead of just using argmin on the agent state distance array, the `future_goal_distances` will first be added to it. Now the argmin selects a frame of an episode where the current state is similar and where it gets as close as possible to the goal in the next seconds.
 
-##### Penalty for selecting the same episode
+##### # Penalty for selecting the same episode
 
 In the search code there is another array added onto the distances before using argmin: `same_episode_penalty`.
 This mitigates directly selecting the same episode multiple times by adding a penalty value (e.g. 10) onto the newly selected frame and its surroundings.
 Every search, this penalty is decreased so that the episode can be selected again in the future, after others have been selected.
 
-##### Redoing the search
+##### # Redoing the search
 
 After a trajectory has been found, the agent would follow the dataset frames and copy their actions one by one until a new search is done.
 There are 4 conditions seen in `TargetedSearchAgent::should_search_again()` that result in searching the dataset again:
