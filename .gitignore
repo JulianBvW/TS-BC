@@ -8,8 +8,7 @@ weights/ts_bc/*.npy
 *.tar.gz
 
 # TODO delete?
-output/
-*.mp4
+output/*
 
 # Created by https://www.toptal.com/developers/gitignore/api/python,windows
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,windows
