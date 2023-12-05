@@ -8,7 +8,7 @@ AGENT_RESOLUTION = (256, 160)  # (W, H)
 SLIDING_WINDOW_SIZE = 16
 
 class LatentSpaceMineCLIP:
-    def __init__(self, device="cuda"):
+    def __init__(self, device='cuda'):
         self.latents = []  # Python List while training, Numpy array while inference
         self.device = device
     
@@ -62,7 +62,7 @@ class LatentSpaceMineCLIP:
     
     def get_distance(self, idx, latent):  # TODO refactor to use `self.distance_function` or something
         diff = self.latents[idx] - latent
-        diff = abs(diff).sum()
+        diff = torch.abs(diff).sum()
         return diff
 
     def get_nearest(self, latent): # TODO episode_start is removed
@@ -78,7 +78,7 @@ class LatentSpaceMineCLIP:
 
         print(f'Found nearest in {episode_id} at frame {nearest_idx - episode_start} ({(nearest_idx - episode_start) // 20 // 60}:{((nearest_idx - episode_start) // 20) % 60})')
 
-def load_mineclip(weights_file='weights/mineclip/attn.pth', device="cuda"):  # TODO: in it's own file?
+def load_mineclip(weights_file='weights/mineclip/attn.pth', device='cuda'):  # TODO: in it's own file?
     mineclip = MineCLIP(arch='vit_base_p16_fz.v2.t2', hidden_dim=512, image_feature_dim=512, mlp_adapter_spec='v0-2.t0', pool_type='attn.d2.nh8.glusw', resolution=[160, 256])
     mineclip.load_ckpt(weights_file, strict=True)
 

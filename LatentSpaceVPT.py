@@ -18,7 +18,7 @@ class LatentSpaceVPT:
         self.latents = []  # Python List while training, Numpy array while inference
     
     @torch.no_grad()
-    def load(self, latents_file='weights/ts_bc/latents_vpt.npy'):
+    def load(self, latents_file='weights/ts_bc/latents_vpt.npy'):  # TODO set device
         self.latents = torch.from_numpy(np.load(latents_file, allow_pickle=True)).to('cuda')
         print(f'Loaded VPT latent space with {len(self.latents)} latents')
         return self

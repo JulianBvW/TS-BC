@@ -7,7 +7,7 @@ from minerl.herobraine.env_specs.human_survival_specs import HumanSurvival
 
 from TargetedSearchAgent import TargetedSearchAgent
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 TEXT_GOAL = 'gather wood'
 

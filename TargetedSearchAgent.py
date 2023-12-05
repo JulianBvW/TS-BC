@@ -8,7 +8,7 @@ from EpisodeActions import EpisodeActions
 from LatentSpaceMineCLIP import LatentSpaceMineCLIP, load_mineclip, AGENT_RESOLUTION, SLIDING_WINDOW_SIZE
 
 class TargetedSearchAgent():
-    def __init__(self, env, max_follow_frames=20, goal_rolling_window_size=20*20, device="cuda"):
+    def __init__(self, env, max_follow_frames=20, goal_rolling_window_size=20*20, device='cuda'):
         self.env = env
         self.past_frames = []
         self.frame_counter = 0  # How many frames the agent has played
@@ -20,16 +20,16 @@ class TargetedSearchAgent():
         self.diff_threshold = 90.0  # TODO which number?
 
         self.log = []
+        self.device = device
 
-        self.mineclip_model = load_mineclip(device=device)
+        self.mineclip_model = load_mineclip(device=self.device)
         self.episode_actions = EpisodeActions().load()
-        self.latent_space_mineclip = LatentSpaceMineCLIP(device=device).load()
+        self.latent_space_mineclip = LatentSpaceMineCLIP(device=self.device).load()
 
         self.nearest_idx = None
         self.current_goal = None
         self.future_goal_distances = None
         self.goal_rolling_window_size = goal_rolling_window_size
-        self.device = device
     
     def set_goal(self, goal_text):
         self.current_goal = goal_text
