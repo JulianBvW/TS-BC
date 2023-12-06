@@ -9,6 +9,8 @@ After finding a suitable starting point it copies the actions that were done in 
 The search results from both models are then filtered to get trajectories where the current agent situation can lead to the goal.
 The actions from those trajectories are then copied.
 
+Videos of test runs with different prompts copied from [STEVE-1](https://sites.google.com/view/steve-1) can be found here: [Drive](https://drive.google.com/drive/folders/1kM6IpEP3bAnmKYh3X5_NXApNAsf6za_2?usp=drive_link)
+
 ### Installation
 
 1. Make sure to have Java JDK 8 installed
@@ -58,6 +60,10 @@ This will generate 4 files in `./weights/ts_bc/` that store
 Run the agent: `python run_agent.py`.
 
 **Note:** If you run the agent on a headless machine, use `xvfb-run python run_agent.py`
+
+##### Analysis
+
+Using: `python analyse.py` after you run the model, you can create a analysis video where at the top you can see the recorded agent video and at the bottom the current frames from the dataset video the agent is currently copying from. Also at the bottom you can see the computed difference score between the agent frames and dataset video frames.
 
 ---
 
