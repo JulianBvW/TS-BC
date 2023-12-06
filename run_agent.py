@@ -27,6 +27,7 @@ def main(args):
     agent.set_goal(args.goal)
 
     obs = env.reset()
+    print('### Starting agent')
     with torch.no_grad():
         for _ in tqdm(range(args.max_frames)):
 
