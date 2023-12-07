@@ -53,6 +53,8 @@ class LatentSpaceMineCLIP:
         diff = torch.abs(diff).sum()
         return diff
 
+    # Different distance mesures: L1, L2, Cosine, nDCG (normalized discounted cumulative gain)
+
     def get_nearest(self, latent): # TODO episode_start is removed
         diffs = self.get_distances(latent)
         nearest_idx = diffs.argmin()#.to('cpu').item() # TODO remove .to('cpu').item()
