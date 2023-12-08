@@ -5,10 +5,11 @@ import numpy as np
 import torch.nn.functional as F
 
 from EpisodeActions import EpisodeActions
-from LatentSpaceMineCLIP import LatentSpaceMineCLIP, load_mineclip, AGENT_RESOLUTION, SLIDING_WINDOW_SIZE
+from LatentSpaceMineCLIP import LatentSpaceMineCLIP, load_mineclip, SLIDING_WINDOW_SIZE
+from LatentSpaceVPT import LatentSpaceVPT, load_vpt, AGENT_RESOLUTION, CONTEXT
 
 class TargetedSearchAgent():
-    def __init__(self, env, max_follow_frames=20, goal_rolling_window_size=20*20, device='cuda'):
+    def __init__(self, env, max_follow_frames=20, goal_rolling_window_size=5*20, distance_fn='euclidean', device='cuda'):
         self.env = env
         self.past_frames = []
         self.frame_counter = 0  # How many frames the agent has played
@@ -16,16 +17,19 @@ class TargetedSearchAgent():
         self.max_follow_frames = max_follow_frames  # How many frames we can follow before searching for a new trajectory
 
         self.redo_search_counter = 0  # TODO better name?
-        self.redo_search_threshold = 5
-        self.diff_threshold = 90.0  # TODO which number?
+        self.redo_search_threshold = 3
+        self.diff_threshold = 1000000.0 #150.0 #90.0  # TODO which number?
 
         self.diff_log = []
         self.search_log = []
         self.device = device
 
         self.mineclip_model = load_mineclip(device=self.device)
+        self.vpt_model = load_vpt(device=self.device)
+        self.vpt_hidden = self.vpt_model.initial_state(1)
         self.episode_actions = EpisodeActions().load()
-        self.latent_space_mineclip = LatentSpaceMineCLIP(device=self.device).load()
+        self.latent_space_mineclip = LatentSpaceMineCLIP(distance_fn=distance_fn, device=self.device).load()
+        self.latent_space_vpt = LatentSpaceVPT(distance_fn=distance_fn, device=self.device).load()
 
         self.same_episode_penalty = torch.zeros(len(self.episode_actions.actions)).to(self.device)
         self.select_same_penalty = 10.0  # TODO
@@ -69,8 +73,17 @@ class TargetedSearchAgent():
         action, is_null_action = self.episode_actions.actions[self.nearest_idx + self.follow_frame]
 
         return action
-    
+
     def get_latent(self, obs):
+        frame = obs['pov']
+        frame = cv2.resize(frame, AGENT_RESOLUTION)
+        frame = torch.tensor(frame).unsqueeze(0).unsqueeze(0).to('cuda')  # Add 2 extra dimensions for vpt
+        (latent, _), self.vpt_hidden = self.vpt_model.net({'img': frame}, self.vpt_hidden, context=CONTEXT)
+        del(frame)
+
+        return latent[0][0]
+    
+    def get_latent_mineclip(self, obs):
         frame = obs['pov']
         frame = np.transpose(cv2.resize(frame, AGENT_RESOLUTION), (2, 1, 0))
         self.past_frames.append(frame)
@@ -91,7 +104,7 @@ class TargetedSearchAgent():
         self.same_episode_penalty = torch.maximum(self.same_episode_penalty - 1, torch.tensor(0))
 
         # Search for the next trajectory based on the goal and current state
-        possible_trajectories = self.future_goal_distances + self.latent_space_mineclip.get_distances(latent)
+        possible_trajectories = self.future_goal_distances + self.latent_space_vpt.get_distances(latent)
         possible_trajectories += self.same_episode_penalty
         self.nearest_idx = possible_trajectories.argmin().to('cpu').item()
 
@@ -122,7 +135,7 @@ class TargetedSearchAgent():
             return
 
         # Compute current difference
-        diff_to_follow_latent = self.latent_space_mineclip.get_distance(self.nearest_idx + self.follow_frame, latent)
+        diff_to_follow_latent = self.latent_space_vpt.get_distance(self.nearest_idx + self.follow_frame, latent)
         self.diff_log.append(diff_to_follow_latent.to('cpu').item())
 
         # After selecting a new trajectory, follow it for the first few frames
