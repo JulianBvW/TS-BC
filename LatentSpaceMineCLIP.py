@@ -16,17 +16,18 @@ class LatentSpaceMineCLIP:
         self.device = device
     
     @torch.no_grad()
-    def load(self, latents_file='weights/ts_bc/latents_mineclip.npy'):
+    def load(self, latents_file='weights/ts_bc/latents_mineclip.npy'):  # TODO update to new format
         self.latents = torch.from_numpy(np.load(latents_file, allow_pickle=True)).to(self.device)
         print(f'Loaded MineCLIP latent space with {len(self.latents)} latents')
         return self
     
-    def save(self, latents_file='weights/ts_bc/latents_mineclip'):
+    def save(self, latents_file='weights/ts_bc/latents_mineclip'):  # TODO remove?
         latents = np.array(self.latents)
         np.save(latents_file, latents)
 
     @torch.no_grad()
-    def train_episode(self, mineclip_model, frames):
+    def train_episode(self, mineclip_model, frames, vid_id, save_dir='weights/ts_bc/latents_mineclip/'):
+        episode_latents = []
 
         resized_frames = np.empty((frames.shape[0], AGENT_RESOLUTION[1], AGENT_RESOLUTION[0], 3), dtype=np.uint8)
         for ts in range(frames.shape[0]):
@@ -42,9 +43,11 @@ class LatentSpaceMineCLIP:
 
             latents = mineclip_model.encode_video(inter_batch_frames)
             
-            self.latents += [latent.astype('float16') for latent in latents.to('cpu').numpy()]
+            episode_latents += [latent.astype('float16') for latent in latents.to('cpu').numpy()]
 
             del(inter_batch_frames)
+        
+        np.save(save_dir + vid_id.rsplit('/', 1)[-1], np.array(episode_latents))
 
     def get_distances(self, latent):
         return self.distance_function(self.latents, latent)

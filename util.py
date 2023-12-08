@@ -8,7 +8,7 @@ CAMERA_BUTTON_MAPPING = {
 }
 
 KEYBOARD_BUTTON_MAPPING = {
-    #'key.keyboard.escape': 'ESC',
+    'key.keyboard.escape': 'ESC',
 
     'key.keyboard.w': 'forward',
     'key.keyboard.s': 'back',

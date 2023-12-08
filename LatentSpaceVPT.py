@@ -21,17 +21,18 @@ class LatentSpaceVPT:
         self.device = device
     
     @torch.no_grad()
-    def load(self, latents_file='weights/ts_bc/latents_vpt.npy'):  # TODO set device
+    def load(self, latents_file='weights/ts_bc/latents_vpt.npy'):  # TODO update to new format
         self.latents = torch.from_numpy(np.load(latents_file, allow_pickle=True)).to(self.device)
         print(f'Loaded VPT latent space with {len(self.latents)} latents')
         return self
     
-    def save(self, latents_file='weights/ts_bc/latents_vpt'):
+    def save(self, latents_file='weights/ts_bc/latents_vpt'):  # TODO remove?
         latents = np.array(self.latents)
         np.save(latents_file, latents)
 
     @torch.no_grad()
-    def train_episode(self, vpt_model, frames):
+    def train_episode(self, vpt_model, frames, vid_id, save_dir='weights/ts_bc/latents_vpt/'):
+        episode_latents = []
         model_state = vpt_model.initial_state(1)
 
         resized_frames = np.empty((frames.shape[0], AGENT_RESOLUTION[1], AGENT_RESOLUTION[0], 3), dtype=np.uint8)
@@ -45,9 +46,11 @@ class LatentSpaceVPT:
             (latent, _), model_state = vpt_model.net({'img': frame}, model_state, context=CONTEXT)
             latent = latent[0][0].to('cpu').numpy().astype('float16')
 
-            self.latents.append(latent)
+            episode_latents.append(latent)
         
         del(frames)
+
+        np.save(save_dir + vid_id.rsplit('/', 1)[-1], np.array(episode_latents))
 
     def get_distances(self, latent):
         return self.distance_function(self.latents, latent)

@@ -60,13 +60,7 @@ class VPTDataset(Dataset):
                 return self[idx]
         return None, None, None
 
-    def get_random_and_delete(self):
-        # Delete old videos
-        for f in os.listdir(self.data_dir):
-            if f.endswith(VIDEO_TYPE) or f.endswith(LABEL_TYPE):
-                os.remove(os.path.join(self.data_dir, f))
-
-        # Download and return random video
+    def get_random(self):
         idx = np.random.randint(len(self))
         video, actions, vid_id = self[idx]
 
@@ -74,6 +68,12 @@ class VPTDataset(Dataset):
             return self.get_random_and_delete()
 
         return video, actions, vid_id
+
+    def delete(self, vid_id):
+        vid_name = vid_id.rsplit('/', 1)[-1]
+        for f in os.listdir(self.data_dir):
+            if f.endswith(vid_name + VIDEO_TYPE) or f.endswith(vid_name + LABEL_TYPE):
+                os.remove(os.path.join(self.data_dir, f))
     
     def download(self, idx):
         url = self.download_base_url + self.data[idx]

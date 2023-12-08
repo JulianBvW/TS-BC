@@ -3,9 +3,11 @@ example_images/*
 weights/mineclip/*.pth
 weights/vpt/*.model
 weights/vpt/*.weights
-weights/ts_bc/*.npy
+weights/ts_bc/*
 
 *.tar.gz
+
+*/__pycache__/
 
 # TODO delete?
 output/*

@@ -1,3 +1,4 @@
+import os
 import argparse
 from tqdm import tqdm
 
@@ -7,6 +8,10 @@ from LatentSpaceVPT import LatentSpaceVPT, load_vpt
 from LatentSpaceMineCLIP import LatentSpaceMineCLIP, load_mineclip
 
 def main(args):
+    os.makedirs('weights/ts_bc/actions/', exist_ok=True)
+    os.makedirs('weights/ts_bc/latents_vpt/', exist_ok=True)
+    os.makedirs('weights/ts_bc/latents_mineclip/', exist_ok=True)
+    
     dataset = VPTDataset()
 
     episode_actions = EpisodeActions()
@@ -16,26 +21,29 @@ def main(args):
     vpt_model = load_vpt()
     mineclip_model = load_mineclip()
 
-    for i in tqdm(range(args.sample_size)):
-        frames, actions, vid_id = dataset.get_random_and_delete()  # TODO not the same on multiple times
+    iterator = range(args.batch_size) if args.random_sample_size is None else tqdm(range(args.random_sample_size))
+
+    for i in iterator:
+        if args.random_sample_size is None:
+            idx = args.batch_idx * args.batch_size + i
+            if idx >= len(dataset):
+                break
+            frames, actions, vid_id = dataset[idx]
+        else:
+            frames, actions, vid_id = dataset.get_random()
 
         episode_actions.train_episode(actions, vid_id)
-        latent_space_vpt.train_episode(vpt_model, frames)
-        latent_space_mineclip.train_episode(mineclip_model, frames)
+        latent_space_vpt.train_episode(vpt_model, frames, vid_id)
+        latent_space_mineclip.train_episode(mineclip_model, frames, vid_id)
 
-        if i % 20 == 0:
-            episode_actions.save()
-            latent_space_vpt.save()
-            latent_space_mineclip.save()
-    
-    episode_actions.save()
-    latent_space_vpt.save()
-    latent_space_mineclip.save()
+        dataset.delete(vid_id)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('--sample-size', type=int, default=200)
+    parser.add_argument('--random-sample-size', type=int, default=None)
+    parser.add_argument('--batch-size', type=int, default=400)
+    parser.add_argument('--batch-idx', type=int, default=0)
     args = parser.parse_args()
 
     main(args)
