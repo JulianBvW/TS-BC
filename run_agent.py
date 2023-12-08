@@ -23,6 +23,8 @@ def main(args):
 
     # HumanSurvival is a sandbox `gym`` environment for Minecraft with no set goal or timeframe
     env = HumanSurvival(**ENV_KWARGS).make()
+    if args.seed is not None:
+        env.seed(args.seed)
     agent = TargetedSearchAgent(env, device=args.device)
     agent.set_goal(args.goal)
 
@@ -50,6 +52,7 @@ if __name__ == "__main__":
     
     parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--goal', type=str, default='gather wood')
+    parser.add_argument('--seed', type=int, default=None)
     parser.add_argument('--max-frames', type=int, default=1*60*20)
     args = parser.parse_args()
 
