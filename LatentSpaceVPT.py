@@ -8,14 +8,16 @@ import numpy as np
 from gym3.types import DictType
 from openai_vpt.lib.policy import MinecraftAgentPolicy
 
+from distance_fns import DISTANCE_FUNCTIONS
 from LatentSpaceMineCLIP import SLIDING_WINDOW_SIZE
 
 AGENT_RESOLUTION = (128, 128)
 CONTEXT = {'first': torch.tensor([[False]])}
 
 class LatentSpaceVPT:
-    def __init__(self, device='cuda'):
+    def __init__(self, distance_fn='euclidean', device='cuda'):
         self.latents = []  # Python List while training, Numpy array while inference
+        self.distance_function = DISTANCE_FUNCTIONS[distance_fn]
         self.device = device
     
     @torch.no_grad()
@@ -47,15 +49,11 @@ class LatentSpaceVPT:
         
         del(frames)
 
-    def get_distances(self, latent):  # TODO look at different norms
-        diffs = self.latents - latent
-        diffs = torch.abs(diffs).sum(1)  # Sum up along the single latents exponential difference to the current latent
-        return diffs
+    def get_distances(self, latent):
+        return self.distance_function(self.latents, latent)
     
-    def get_distance(self, idx, latent):  # TODO refactor to use `self.distance_function` or something
-        diff = self.latents[idx] - latent
-        diff = torch.abs(diff).sum()
-        return diff
+    def get_distance(self, idx, latent):
+        return self.distance_function(self.latents[idx], latent)
 
     def get_nearest(self, latent): # TODO removed episode_starts
         # TODO assert latents is numpy array

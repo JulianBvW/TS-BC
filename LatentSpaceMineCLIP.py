@@ -4,12 +4,15 @@ import numpy as np
 from numpy.lib.stride_tricks import sliding_window_view
 from mineclip import MineCLIP
 
+from distance_fns import DISTANCE_FUNCTIONS
+
 AGENT_RESOLUTION = (256, 160)  # (W, H)
 SLIDING_WINDOW_SIZE = 16
 
 class LatentSpaceMineCLIP:
-    def __init__(self, device='cuda'):
+    def __init__(self, distance_fn='euclidean', device='cuda'):
         self.latents = []  # Python List while training, Numpy array while inference
+        self.distance_function = DISTANCE_FUNCTIONS[distance_fn]
         self.device = device
     
     @torch.no_grad()
@@ -43,17 +46,11 @@ class LatentSpaceMineCLIP:
 
             del(inter_batch_frames)
 
-    def get_distances(self, latent):  # TODO look at different norms
-        diffs = self.latents - latent
-        diffs = torch.abs(diffs).sum(1)  # Sum up along the single latents exponential difference to the current latent
-        return diffs
+    def get_distances(self, latent):
+        return self.distance_function(self.latents, latent)
     
-    def get_distance(self, idx, latent):  # TODO refactor to use `self.distance_function` or something
-        diff = self.latents[idx] - latent
-        diff = torch.abs(diff).sum()
-        return diff
-
-    # Different distance mesures: L1, L2, Cosine, nDCG (normalized discounted cumulative gain)
+    def get_distance(self, idx, latent):
+        return self.distance_function(self.latents[idx], latent)
 
     def get_nearest(self, latent): # TODO episode_start is removed
         diffs = self.get_distances(latent)

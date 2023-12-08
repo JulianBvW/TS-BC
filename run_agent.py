@@ -6,6 +6,7 @@ import argparse
 from tqdm import tqdm
 from minerl.herobraine.env_specs.human_survival_specs import HumanSurvival
 
+from distance_fns import DISTANCE_FUNCTIONS
 from TargetedSearchAgent import TargetedSearchAgent
 
 ENV_KWARGS = dict(
@@ -25,7 +26,8 @@ def main(args):
     env = HumanSurvival(**ENV_KWARGS).make()
     if args.seed is not None:
         env.seed(args.seed)
-    agent = TargetedSearchAgent(env, device=args.device)
+
+    agent = TargetedSearchAgent(env, distance_fn=args.distance_fn, device=args.device)
     agent.set_goal(args.goal)
 
     obs = env.reset()
@@ -51,6 +53,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     
     parser.add_argument('--device', type=str, default='cuda')
+    parser.add_argument('--distance_fn', type=str, default='euclidean', choices=DISTANCE_FUNCTIONS.keys())
     parser.add_argument('--goal', type=str, default='gather wood')
     parser.add_argument('--seed', type=int, default=None)
     parser.add_argument('--max-frames', type=int, default=1*60*20)
