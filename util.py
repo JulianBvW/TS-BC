@@ -80,6 +80,8 @@ def to_minerl_action(json_action):
     Convert the VPT dataset JSONL action into a MineRL action.
     '''
     is_null_action = True
+
+    last_hotbar = 0
     
     action = MINERL_ACTION.copy()
 
@@ -104,5 +106,11 @@ def to_minerl_action(json_action):
         if key in KEYBOARD_BUTTON_MAPPING:
             action[KEYBOARD_BUTTON_MAPPING[key]] = 1
             is_null_action = False
+    
+    # Update Hotbar
+    current_hotbar = json_action['hotbar']
+    if current_hotbar != last_hotbar:
+        action[f'hotbar.{current_hotbar + 1}'] = 1
+        last_hotbar = current_hotbar
     
     return action, is_null_action
