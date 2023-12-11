@@ -6,6 +6,7 @@ import argparse
 from tqdm import tqdm
 from minerl.herobraine.env_specs.human_survival_specs import HumanSurvival
 
+from programmatic_eval import ProgrammaticEvaluator
 from distance_fns import DISTANCE_FUNCTIONS
 from TargetedSearchAgent import TargetedSearchAgent
 
@@ -31,6 +32,8 @@ def main(args):
     agent.set_goal(args.goal)
 
     obs = env.reset()
+    prog_evaluator = ProgrammaticEvaluator(obs)
+
     print('### Starting agent')
     with torch.no_grad():
         for _ in tqdm(range(args.max_frames)):
@@ -39,6 +42,7 @@ def main(args):
             obs, _, _, _ = env.step(action)
 
             video_writer.write(cv2.cvtColor(obs['pov'], cv2.COLOR_RGB2BGR))
+            prog_evaluator.update(obs)
             env.render()
 
     video_writer.release()
@@ -48,6 +52,7 @@ def main(args):
     with open('output/agent_diff_log.txt', 'w') as f:
         for m in agent.diff_log:
             f.write(str(m) + '\n')
+    prog_evaluator.print_results()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
