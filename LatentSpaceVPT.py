@@ -75,5 +75,6 @@ def load_vpt(model_file='weights/vpt/foundation-model-1x.model', weights_file='w
 
     agent = MinecraftAgentPolicy(policy_kwargs=policy_kwargs, pi_head_kwargs=pi_head_kwargs, action_space=DictType())
     agent.load_state_dict(torch.load(weights_file), strict=False)
+    agent.eval()
 
     return agent.to(device)

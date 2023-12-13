@@ -63,5 +63,6 @@ class LatentSpaceMineCLIP:
 def load_mineclip(weights_file='weights/mineclip/attn.pth', device='cuda'):  # TODO: in it's own file?
     mineclip = MineCLIP(arch='vit_base_p16_fz.v2.t2', hidden_dim=512, image_feature_dim=512, mlp_adapter_spec='v0-2.t0', pool_type='attn.d2.nh8.glusw', resolution=[160, 256])
     mineclip.load_ckpt(weights_file, strict=True)
+    mineclip.eval()
 
     return mineclip.to(device)
