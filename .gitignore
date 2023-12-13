@@ -3,6 +3,7 @@ example_images/*
 weights/mineclip/*.pth
 weights/vpt/*.model
 weights/vpt/*.weights
+weights/cvae/*.pt
 weights/ts_bc/*
 
 *.tar.gz

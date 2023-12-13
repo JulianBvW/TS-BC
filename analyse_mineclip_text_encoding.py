@@ -6,7 +6,9 @@ from tqdm import tqdm
 from LatentSpaceMineCLIP import LatentSpaceMineCLIP, load_mineclip, SLIDING_WINDOW_SIZE
 from EpisodeActions import EpisodeActions
 from VPTDataset import VPTDataset
+from CVAE import load_cvae
 
+cvae_model = load_cvae()
 mineclip_model = load_mineclip()
 latent_space_mineclip = LatentSpaceMineCLIP().load()
 episode_actions = EpisodeActions().load()
@@ -22,8 +24,10 @@ vids = {}
 for goal in tqdm(GOALS):
     #print(f'### {goal}')
     vids[goal] = []
-    text_latent = mineclip_model.encode_text(goal)[0].detach()
-    goal_distances = latent_space_mineclip.get_distances(text_latent)
+    text_latent = mineclip_model.encode_text(goal).detach()
+    vis_text_latent = cvae_model(text_latent)
+    #goal_distances = latent_space_mineclip.get_distances(text_latent[0])
+    goal_distances = latent_space_mineclip.get_distances(vis_text_latent[0])
     for i in range(9):
         nearest_idx = goal_distances.argmin().to('cpu').item()
         #nearest_idx = torch.abs((goal_distances - torch.quantile(goal_distances, 0.1))).argmin()
