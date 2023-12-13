@@ -31,9 +31,10 @@ pip install gym==0.21.0 gym3 attrs
 pip install git+https://github.com/minerllabs/minerl
 pip install git+https://github.com/MineDojo/MineCLIP
 ```
-5. Download weights and put them into `./weights/{vpt or mineclip}` respectively
+5. Download weights and put them into `./weights/{vpt or mineclip or cvae}` respectively
   - VPT: [Model file](https://openaipublic.blob.core.windows.net/minecraft-rl/models/foundation-model-1x.model) and [Weight file](https://openaipublic.blob.core.windows.net/minecraft-rl/models/foundation-model-1x.weights)
   - MineCLIP: [`attn.pth`](https://drive.google.com/file/d/1uaZM1ZLBz2dZWcn85rZmjP7LV6Sg5PZW/view)
+  - CVAE (from Steve-1): [`steve1_prior.pt`](https://drive.google.com/uc?id=1OdX5wiybK8jALVfP5_dEo0CWm9BQbDES)
 6. After cloning this repository, clone the OpenAI VPT submodule using
 ```
 git submodule init
