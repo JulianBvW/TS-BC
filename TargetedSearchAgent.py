@@ -4,6 +4,7 @@ import minerl
 import numpy as np
 import torch.nn.functional as F
 
+from CVAE import load_cvae
 from EpisodeActions import EpisodeActions
 from LatentSpaceMineCLIP import LatentSpaceMineCLIP, load_mineclip, SLIDING_WINDOW_SIZE
 from LatentSpaceVPT import LatentSpaceVPT, load_vpt, AGENT_RESOLUTION, CONTEXT
@@ -24,12 +25,13 @@ class TargetedSearchAgent():
         self.search_log = []
         self.device = device
 
+        self.episode_actions = EpisodeActions().load()
         self.mineclip_model = load_mineclip(device=self.device)
+        self.latent_space_mineclip = LatentSpaceMineCLIP(distance_fn=distance_fn, device=self.device).load()
         self.vpt_model = load_vpt(device=self.device)
         self.vpt_hidden = self.vpt_model.initial_state(1)
-        self.episode_actions = EpisodeActions().load()
-        self.latent_space_mineclip = LatentSpaceMineCLIP(distance_fn=distance_fn, device=self.device).load()
         self.latent_space_vpt = LatentSpaceVPT(distance_fn=distance_fn, device=self.device).load()
+        self.cvae_model = load_cvae(device=self.device)
 
         self.same_episode_penalty = torch.zeros(len(self.episode_actions.actions)).to(self.device)
         self.select_same_penalty = 10.0  # TODO
@@ -37,6 +39,8 @@ class TargetedSearchAgent():
         self.nearest_idx = None
         self.current_goal = None
         self.future_goal_distances = None
+        self.trajectory_filter_top25p = None
+        self.trajectory_filter_top05p = None
         self.goal_rolling_window_size = goal_rolling_window_size
     
     def set_goal(self, text_goal):
@@ -46,14 +50,21 @@ class TargetedSearchAgent():
         a certain dataset episode frame for some time.
         '''
         self.current_goal = text_goal
-        text_latent = self.mineclip_model.encode_text(self.current_goal)[0].detach()
-        goal_distances = self.latent_space_mineclip.get_distances(text_latent)
+        text_latent = self.mineclip_model.encode_text(self.current_goal)
+        vis_text_latent = self.cvae_model(text_latent)
+        goal_distances = self.latent_space_mineclip.get_distances(vis_text_latent[0].detach())
 
         goal_distances_padding = F.pad(goal_distances, (0, self.goal_rolling_window_size-1), 'constant', float('inf'))
         goal_distances_rolling = goal_distances_padding.unfold(0, self.goal_rolling_window_size, 1)
         self.future_goal_distances = goal_distances_rolling.min(1).values
 
-        print(f'Set new goal: \"{self.current_goal}\"')
+        mn, mean = self.future_goal_distances.min(), self.future_goal_distances.mean()
+        top25p = mean-(mean-mn)/2
+        top05p = mean-(mean-mn)/10*9
+        self.trajectory_filter_top25p = self.future_goal_distances >= top25p
+        self.trajectory_filter_top05p = self.future_goal_distances >= top05p
+
+        print(f'Set new goal: \"{self.current_goal}\" with {len(self.trajectory_filter_top05p)-self.trajectory_filter_top05p.sum()}/{len(self.trajectory_filter_top05p)} latents')
 
     def get_action(self, obs):
         self.follow_frame += 1
@@ -105,11 +116,15 @@ class TargetedSearchAgent():
 
         # Search for the next trajectory based on the goal and current state
         possible_trajectories = self.future_goal_distances + self.latent_space_vpt.get_distances(latent)
+        #possible_trajectories = self.trajectory_filter_top05p*300 + self.latent_space_vpt.get_distances(latent)
         possible_trajectories += self.same_episode_penalty
         self.nearest_idx = possible_trajectories.argmin().to('cpu').item()
 
+        # if self.trajectory_filter_top05p[self.nearest_idx]:
+        #     print('selected badly')
+
         # Give a penalty to the episode (TODO currently window around) that has been chosen
-        self.same_episode_penalty[max(self.nearest_idx-200, 0):self.nearest_idx+200] = self.select_same_penalty
+        self.same_episode_penalty[max(self.nearest_idx-5, 0):self.nearest_idx+5] = self.select_same_penalty
 
         self.follow_frame = -1
         self.redo_search_counter = 0
