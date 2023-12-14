@@ -57,11 +57,11 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('--device', type=str, default='cuda')
-    parser.add_argument('--distance_fn', type=str, default='euclidean', choices=DISTANCE_FUNCTIONS.keys())
-    parser.add_argument('--goal', type=str, default='gather wood')
     parser.add_argument('--seed', type=int, default=None)
+    parser.add_argument('--goal', type=str, default='gather wood')
+    parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--max-frames', type=int, default=1*60*20)
+    parser.add_argument('--distance-fn', type=str, default='euclidean', choices=DISTANCE_FUNCTIONS.keys())
     args = parser.parse_args()
 
     main(args)
