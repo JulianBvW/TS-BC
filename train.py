@@ -32,6 +32,9 @@ def main(args):
         else:
             frames, actions, vid_id = dataset.get_random()
 
+        if frames is None:
+            continue
+
         episode_actions.train_episode(actions, vid_id)
         latent_space_vpt.train_episode(vpt_model, frames, vid_id)
         latent_space_mineclip.train_episode(mineclip_model, frames, vid_id)
