@@ -21,7 +21,18 @@ class LatentSpaceVPT:
         self.device = device
     
     @torch.no_grad()
-    def load(self, latents_file='weights/ts_bc/latents_vpt.npy'):  # TODO update to new format
+    def load(self, episode_actions, latents_folder='weights/ts_bc/latents_vpt/'):
+        for vid_id, _ in episode_actions.episode_starts:
+            _, name = vid_id.rsplit('/', 1)
+            vid_latents = np.load(latents_folder + name + '.npy', allow_pickle=True)
+            self.latents.append(vid_latents)
+
+        self.latents = torch.from_numpy(np.vstack(self.latents)).to(self.device)
+        print(f'Loaded VPT latent space with {len(self.latents)} latents')
+        return self
+    
+    @torch.no_grad()
+    def load_OLD(self, latents_file='weights/ts_bc/latents_vpt.npy'):  # TODO update to new format
         self.latents = torch.from_numpy(np.load(latents_file, allow_pickle=True)).to(self.device)
         print(f'Loaded VPT latent space with {len(self.latents)} latents')
         return self

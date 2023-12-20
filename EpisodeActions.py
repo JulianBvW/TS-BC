@@ -1,4 +1,6 @@
+import os
 import torch
+import random
 import numpy as np
 
 from util import to_minerl_action
@@ -9,10 +11,30 @@ class EpisodeActions:
         self.actions = []         # Python List while training, Numpy array while inference
         self.episode_starts = []  # Python List while training, Numpy array while inference
 
-        self.frame_counter = 0
+    @torch.no_grad()
+    def load(self, actions_folder='weights/ts_bc/actions/', N=3):
+        action_files = os.listdir(actions_folder)
+        if N > 0:
+            random.shuffle(action_files)
+            action_files = action_files[:N]
+        
+        frame_counter = 0
+        for action_file in action_files:
+            actions = np.load(actions_folder + action_file, allow_pickle=True)
+            self.actions.append(actions)
+
+            name = 'data/10.0/' + action_file.rsplit('.', 1)[0]
+            self.episode_starts.append((name, frame_counter))
+
+            frame_counter += actions.shape[0]
+        
+        self.actions = np.vstack(self.actions)
+        self.episode_starts = np.array(self.episode_starts)
+        print(f'Loaded actions from {len(self.episode_starts)} episodes')
+        return self
 
     @torch.no_grad()
-    def load(self, actions_file='weights/ts_bc/actions.npy', episode_starts_file='weights/ts_bc/episode_starts.npy'):  # TODO new format
+    def load_OLD(self, actions_file='weights/ts_bc/actions.npy', episode_starts_file='weights/ts_bc/episode_starts.npy'):  # TODO new format
         self.actions = np.load(actions_file, allow_pickle=True)
         self.episode_starts = np.load(episode_starts_file, allow_pickle=False)
 

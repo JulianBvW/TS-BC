@@ -25,12 +25,13 @@ class TargetedSearchAgent():
         self.search_log = []
         self.device = device
 
-        self.episode_actions = EpisodeActions().load()
-        self.mineclip_model = load_mineclip(device=self.device)
-        self.latent_space_mineclip = LatentSpaceMineCLIP(distance_fn=distance_fn, device=self.device).load()
+        self.episode_actions = EpisodeActions().load(N=3)
+        self.latent_space_mineclip = LatentSpaceMineCLIP(distance_fn=distance_fn, device=self.device).load(self.episode_actions)
+        self.latent_space_vpt = LatentSpaceVPT(distance_fn=distance_fn, device=self.device).load(self.episode_actions)
+
         self.vpt_model = load_vpt(device=self.device)
         self.vpt_hidden = self.vpt_model.initial_state(1)
-        self.latent_space_vpt = LatentSpaceVPT(distance_fn=distance_fn, device=self.device).load()
+        self.mineclip_model = load_mineclip(device=self.device)
         self.cvae_model = load_cvae(device=self.device)
 
         self.same_episode_penalty = torch.zeros(len(self.episode_actions.actions)).to(self.device)
