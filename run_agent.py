@@ -20,8 +20,8 @@ ENV_KWARGS = dict(
 )
 
 def main(args):
-    video_writer = cv2.VideoWriter('output/agent_recording.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 20, (640, 360))
-    os.makedirs('output/', exist_ok=True)
+    os.makedirs(f'{args.output_dir}/', exist_ok=True)
+    video_writer = cv2.VideoWriter(f'{args.output_dir}/agent_recording.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 20, (640, 360))
 
     # HumanSurvival is a sandbox `gym` environment for Minecraft with no set goal or timeframe
     env = HumanSurvival(**ENV_KWARGS).make()
@@ -45,23 +45,30 @@ def main(args):
             prog_evaluator.update(obs)
             env.render()
 
+    # Save Results
     video_writer.release()
-    with open('output/agent_log.txt', 'w') as f:
+    prog_evaluator.print_results()
+    with open(f'{args.output_dir}/programmatic_results.txt', 'w') as f:
+        for prog_task in prog_evaluator.prog_values.keys():
+            f.write(f'{prog_task}: {prog_evaluator.prog_values[prog_task]}\n')
+    with open(f'{args.output_dir}/agent_log.txt', 'w') as f:
         for m in agent.search_log:
             f.write(m + '\n')
-    with open('output/agent_diff_log.txt', 'w') as f:
+    with open(f'{args.output_dir}/agent_diff_log.txt', 'w') as f:
         for m in agent.diff_log:
             f.write(str(m) + '\n')
-    prog_evaluator.print_results()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     
     parser.add_argument('--seed', type=int, default=None)
-    parser.add_argument('--goal', type=str, default='gather wood')
     parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--max-frames', type=int, default=1*60*20)
-    parser.add_argument('--distance-fn', type=str, default='euclidean', choices=DISTANCE_FUNCTIONS.keys())
+    parser.add_argument('--output-dir', type=str, default='output')
+
+    parser.add_argument('--goal', type=str, default='gather wood')
+    parser.add_argument('--distance-fn', type=str, default='cosine', choices=DISTANCE_FUNCTIONS.keys())
+
     args = parser.parse_args()
 
     main(args)
