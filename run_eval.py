@@ -5,7 +5,7 @@ from datetime import datetime
 from run_agent import main as run_agent_main
 from distance_fns import DISTANCE_FUNCTIONS
 
-GOALS = ['dig as far as possible', 'get dirt', 'look at the sky']#, 'break leaves', 'chop a tree', 'collect seeds', 'break a flower', 'go explore', 'go swimming', 'go underwater', 'open inventory']
+GOALS = ['dig as far as possible', 'get dirt', 'look at the sky', 'break leaves', 'chop a tree', 'collect seeds', 'break a flower', 'go explore', 'go swimming', 'go underwater', 'open inventory']
 
 def main(args):
     base_dir = 'eval/' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
