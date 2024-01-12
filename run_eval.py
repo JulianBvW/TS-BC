@@ -8,7 +8,8 @@ from distance_fns import DISTANCE_FUNCTIONS
 GOALS = ['dig as far as possible', 'get dirt', 'look at the sky', 'break leaves', 'chop a tree', 'collect seeds', 'break a flower', 'go explore', 'go swimming', 'go underwater', 'open inventory']
 
 def main(args):
-    base_dir = 'eval/' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    name = args.name or datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    base_dir = 'eval/' + name
     os.makedirs(f'{base_dir}/', exist_ok=True)
 
     # Save configuration
@@ -31,6 +32,7 @@ if __name__ == "__main__":
     parser.add_argument('--runs-per-goal', type=int, default=10)
     parser.add_argument('--max-frames', type=int, default=1*60*20)
 
+    parser.add_argument('--name', type=str, default=None)
     parser.add_argument('--description', type=str, default='')
     parser.add_argument('--distance-fn', type=str, default='cosine', choices=DISTANCE_FUNCTIONS.keys())
 
