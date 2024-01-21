@@ -37,7 +37,6 @@ class EpisodeActions:
     def load_OLD(self, actions_file='weights/ts_bc/actions.npy', episode_starts_file='weights/ts_bc/episode_starts.npy'):  # TODO new format
         self.actions = np.load(actions_file, allow_pickle=True)
         self.episode_starts = np.load(episode_starts_file, allow_pickle=False)
-
         print(f'Loaded actions from {len(self.episode_starts)} episodes')
         return self
 
@@ -56,7 +55,6 @@ class EpisodeActions:
             episode_actions.append(to_minerl_action(actions[ts]))
         
         episode_actions.append(to_minerl_action(None))  # Append Null Action for last frame
-
         np.save(save_dir + vid_id.rsplit('/', 1)[-1], np.array(episode_actions))
     
     def is_last(self, idx):

@@ -1,10 +1,12 @@
 import os
 import json
 import requests
-import skvideo.io 
+import skvideo.io
 import numpy as np
 from tqdm import tqdm
 from torch.utils.data import Dataset
+
+import traceback
 
 VIDEO_TYPE = '.mp4'
 LABEL_TYPE = '.jsonl'
@@ -39,21 +41,33 @@ class VPTDataset(Dataset):
 
     def __getitem__(self, idx):
         file_path = self.base_dir + self.data[idx]
+        print('dataset get file path', file_path)
 
         try:
             # Download if it does not exist
             if not os.path.isfile(file_path + VIDEO_TYPE) or not os.path.isfile(file_path + LABEL_TYPE):
+                print('will download')
                 self.download(idx)
 
             # Load videos and actions
+            print('will read')
             video = skvideo.io.vread(file_path + VIDEO_TYPE)
+            print('will open json')
             with open(file_path + LABEL_TYPE, 'r') as f:
                 actions = [json.loads(line) for line in f]
-        except:
+        except Exception as e:
+            print('except')
+            print(e)
+            traceback.print_exc()
             return None, None, None
-        
+
+        if len(video) <= 100:
+            print('vid<=100')
+            return None, None, None
+
+        print('return', self.data[idx])
         return video, actions, self.data[idx]
-    
+
     def get_from_vid_id(self, vid_id):
         for idx in range(len(self)):
             if self.data[idx] == vid_id:

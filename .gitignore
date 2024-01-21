@@ -5,6 +5,7 @@ weights/vpt/*.model
 weights/vpt/*.weights
 weights/cvae/*.pt
 weights/ts_bc/*
+cluster_output/*
 
 *.tar.gz
 
