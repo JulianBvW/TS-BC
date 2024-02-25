@@ -19,7 +19,7 @@ class LatentSpaceVPT:
         self.latents = []  # Python List while training, Numpy array while inference
         self.distance_function = DISTANCE_FUNCTIONS[distance_fn]
         self.device = device
-    
+
     @torch.no_grad()
     def load(self, episode_actions, latents_folder='weights/ts_bc/latents_vpt/'):
         for vid_id, _ in episode_actions.episode_starts:
@@ -30,13 +30,13 @@ class LatentSpaceVPT:
         self.latents = torch.from_numpy(np.vstack(self.latents)).to(self.device)
         print(f'Loaded VPT latent space with {len(self.latents)} latents')
         return self
-    
+
     @torch.no_grad()
     def load_OLD(self, latents_file='weights/ts_bc/latents_vpt.npy'):  # TODO update to new format
         self.latents = torch.from_numpy(np.load(latents_file, allow_pickle=True)).to(self.device)
         print(f'Loaded VPT latent space with {len(self.latents)} latents')
         return self
-    
+
     def save(self, latents_file='weights/ts_bc/latents_vpt'):  # TODO remove?
         latents = np.array(self.latents)
         np.save(latents_file, latents)

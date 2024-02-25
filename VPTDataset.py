@@ -53,12 +53,22 @@ class VPTDataset(Dataset):
             print('will read')
             video = skvideo.io.vread(file_path + VIDEO_TYPE)
             print('will open json')
-            with open(file_path + LABEL_TYPE, 'r') as f:
+            with open(file_path + LABEL_TYPE, 'r', encoding='utf-8') as f:
                 actions = [json.loads(line) for line in f]
         except Exception as e:
             print('except')
             print(e)
-            traceback.print_exc()
+            traceback.print_exc() 
+            
+            print('idx:', idx)
+            cur_line = None
+            try:
+                with open(file_path + LABEL_TYPE, 'r', encoding='utf-8') as f:
+                    for line in f:
+                        cur_line = json.loads(line)
+            except:
+                print('cur_line:', cur_line)
+            
             return None, None, None
 
         if len(video) <= 100:

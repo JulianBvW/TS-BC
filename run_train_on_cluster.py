@@ -4,7 +4,7 @@ from VPTDataset import VPTDataset
 
 dataset = VPTDataset()
 
-batch_size = 40
+batch_size = 30
 num_batches = math.ceil(len(dataset) / batch_size)
 save_dir = '/ssd005/projects/minecraft_2024/latents/'
 

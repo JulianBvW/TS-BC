@@ -10,7 +10,7 @@ from LatentSpaceMineCLIP import LatentSpaceMineCLIP, load_mineclip, SLIDING_WIND
 from LatentSpaceVPT import LatentSpaceVPT, load_vpt, AGENT_RESOLUTION, CONTEXT
 
 class TargetedSearchAgent():
-    def __init__(self, env, max_follow_frames=20, goal_rolling_window_size=5*20, distance_fn='euclidean', device='cuda'):
+    def __init__(self, env, search_folder='weights/ts_bc/', max_follow_frames=20, goal_rolling_window_size=5*20, distance_fn='euclidean', device='cuda'):
         self.env = env
         self.past_frames = []
         self.frame_counter = 0  # How many frames the agent has played
@@ -25,9 +25,9 @@ class TargetedSearchAgent():
         self.search_log = []
         self.device = device
 
-        self.episode_actions = EpisodeActions().load(N=3)
-        self.latent_space_mineclip = LatentSpaceMineCLIP(distance_fn=distance_fn, device=self.device).load(self.episode_actions)
-        self.latent_space_vpt = LatentSpaceVPT(distance_fn=distance_fn, device=self.device).load(self.episode_actions)
+        self.episode_actions = EpisodeActions().load(search_folder=search_folder, N=3)
+        self.latent_space_mineclip = LatentSpaceMineCLIP(distance_fn=distance_fn, device=self.device).load(self.episode_actions, latents_folder=search_folder+'latents_mineclip/')
+        self.latent_space_vpt = LatentSpaceVPT(distance_fn=distance_fn, device=self.device).load(self.episode_actions, latents_folder=search_folder+'latents_vpt/')
 
         self.vpt_model = load_vpt(device=self.device)
         self.vpt_hidden = self.vpt_model.initial_state(1)

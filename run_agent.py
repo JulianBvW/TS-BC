@@ -28,7 +28,7 @@ def main(args):
     if args.seed is not None:
         env.seed(args.seed)
 
-    agent = TargetedSearchAgent(env, distance_fn=args.distance_fn, device=args.device)
+    agent = TargetedSearchAgent(env, search_folder=args.search_folder, distance_fn=args.distance_fn, device=args.device)
     agent.set_goal(args.goal)
 
     obs = env.reset()
@@ -60,11 +60,12 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    
+
     parser.add_argument('--seed', type=int, default=None)
     parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--max-frames', type=int, default=1*60*20)
     parser.add_argument('--output-dir', type=str, default='output')
+    parser.add_argument('--search-folder', type=str, default='weights/ts_bc/')
 
     parser.add_argument('--goal', type=str, default='gather wood')
     parser.add_argument('--distance-fn', type=str, default='cosine', choices=DISTANCE_FUNCTIONS.keys())
